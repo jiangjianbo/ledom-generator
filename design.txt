@@ -1,0 +1,25 @@
+系统分为如下几个插件：
+
+1. 负责从文件中装入变量的 VarLoader，装入器需要保留装入器的名字和文件名称，以便查询
+2. 处理的时候分为多个stage，所有的stage都由 Architecture 定义，在主程序开始的时候统一定义，
+   并会在每一个Stage开始结束的时候发出事件通知。不同的输出架构定义的stage不同。stage 的主要
+   目的是输出不同的结果。所以，一个 Stage 只能对应一个 Writer， 但是可以对应多个
+   Outputer + Formatter 的组合。
+3. 负责运行的插件 Processor 会和特定的stage绑定，主程序运行的时候，会根据stage调用这些插件
+   依次处理。所有的同Stage的 Processor 互相之间不能依赖执行顺序。 Processor 把所有的遍历
+   看作是节点遍历，并产生遍历相关的事件通知。
+4. EventHandler 是外部挂接 Processor 事件的处理器，负责扩展和增强 Processor 的处理能力。
+5. 负责输出的 Outputer ，负责根据输出文件类型，把内存中的数据处理成输出格式。输出内容可能是片段。
+6. 负责格式化的 Formatter，将Outputer的输出数据格式化，使之更可读，或者包装一些外部的附加信息。
+7. Writer，负责将格式化之后的输出写入到输出设备，包括文件等。
+
+执行次序为：
+
+VarLoader *
+Architecture
+    （Stage *） + （Outputer * + Writer *）
+        Processor *
+            EventHandler *
+
+Outputer
+    Formatter
